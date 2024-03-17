@@ -12,11 +12,19 @@ import os
 #import datetime
 import xml.etree.ElementTree as ET
 #import atexit
+import glob
+import subprocess
+import threading
 
 root = Tk()
 frame = ttk.Frame(root, padding=10)
 fMsg = ttk.Frame(frame, padding=10)
 txtMsg = Text(fMsg, height=15, width=80)
+#fDO = ttk.Frame(frame)
+#btn1 = ttk.Button(
+#    fDO, text='Start, no overwrite', width=25)
+#btn2 = ttk.Button(
+#    fDO, text='Start, overwrite all', width=25)
 
 rbVar = StringVar()
 
@@ -24,6 +32,7 @@ inputPath = StringVar()
 outputPath = StringVar()
 
 def main():
+    global btnS, btnM, btn1, btn2
     loadIni()
     inputPath.set(tsPath)
     outputPath.set(mpPath)
@@ -35,19 +44,19 @@ def main():
 
     fTS = ttk.Frame(frame)
     fTS.pack(anchor=W)
-    btn = ttk.Button(
+    btnS = ttk.Button(
         fTS, text='HDZERO MicroSD Path(TS files)', width=30,
         command=bTSGetPath)
-    btn.pack(side=LEFT)
+    btnS.pack(side=LEFT)
     eIN = ttk.Entry(fTS, textvariable=inputPath, state='readonly', width=30)
     eIN.pack(side=LEFT)
     
     fMP = ttk.Frame(frame)
     fMP.pack(anchor=W)
-    btn = ttk.Button(
+    btnM = ttk.Button(
         fMP, text='Output path(MP4 files)', width=30,
         command=bMPGetPath)
-    btn.pack(side=LEFT)
+    btnM.pack(side=LEFT)
     eOUT = ttk.Entry(fMP, textvariable=outputPath, state='readonly', width=30)
     eOUT.pack(side=LEFT)
 
@@ -59,7 +68,7 @@ def main():
     btn1.pack(side=LEFT)
     btn2 = ttk.Button(
         fDO, text='Start, overwrite all', width=25,
-        command=bStart)
+        command=bStartOverwrite)
     btn2.pack(side=LEFT)
 
 
@@ -96,15 +105,71 @@ def bMPGetPath():
         outputPath.set(mpPath)
 
 def bStart():
-    global tsPath, mpPath
-    #print(opt)
-    saveIni()
+    disableAll()
+    thread = threading.Thread(target=convertTS2MP4, args=(False,))
+    thread.start()
+#    thread.join()
+#    enableAll()
+
+def bStartOverwrite():
+    disableAll()
+    thread = threading.Thread(target=convertTS2MP4, args=(True,))
+    thread.start()
+#    thread.join()
+#    enableAll()
 
 def logMsg(msg):
     txtMsg.insert(END, msg+"\n")
     txtMsg.see(END)
 
+def disableAll():
+    global btnS, btnM, btn1, btn2
+    btnS["state"] = DISABLED
+    btnM["state"] = DISABLED
+    btn1["state"] = DISABLED
+    btn2["state"] = DISABLED
+
+def enableAll():
+    global btnS, btnM, btn1, btn2
+    btnS["state"] = NORMAL
+    btnM["state"] = NORMAL
+    btn1["state"] = NORMAL
+    btn2["state"] = NORMAL
+
 # End of GUI part
+
+def convertTS2MP4(overwrite):
+    global tsPath, mpPath
+    if (tsPath == "" or mpPath == ""):
+        return
+    saveIni()
+    procCount = 0
+    skipCount = 0
+    errCount = 0
+    tsFiles = glob.glob(os.path.join(tsPath, "*.ts"))
+
+    for tsf in tsFiles:
+        mpf = os.path.join(mpPath, os.path.splitext(os.path.basename(tsf))[0]+".mp4")
+        skip = False
+        if (not overwrite):
+            if (os.path.isfile(mpf)):
+                skip = True
+        if (skip):
+            skipCount += 1
+        else:
+            logMsg("Processing: "+tsf)
+            result = subprocess.call("cp "+tsf+" "+mpf, shell=True)
+            if (result == 0):
+                procCount += 1
+            else:
+                errCount += 1
+    
+#        logMsg(tsf)
+#        logMsg(mpf)
+
+    logMsg("Processed "+str(procCount)+" file(s), "+str(skipCount)+" file(s) skipped")
+    logMsg("Error count="+str(errCount))
+    enableAll();
 
 def loadIni():
     print("<<<")
