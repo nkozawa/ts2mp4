@@ -2,16 +2,13 @@
 # Author: KozakFPV  
 # Copyright (C) 2024 by Nobumichi Kozawa
 
-version = "0.0"
+version = "0.7"
 
 from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
-#from tkinter import messagebox
 import os
-#import datetime
 import xml.etree.ElementTree as ET
-#import atexit
 import glob
 import subprocess
 import threading
@@ -20,13 +17,8 @@ root = Tk()
 frame = ttk.Frame(root, padding=10)
 fMsg = ttk.Frame(frame, padding=10)
 txtMsg = Text(fMsg, height=15, width=80)
-#fDO = ttk.Frame(frame)
-#btn1 = ttk.Button(
-#    fDO, text='Start, no overwrite', width=25)
-#btn2 = ttk.Button(
-#    fDO, text='Start, overwrite all', width=25)
 
-rbVar = StringVar()
+#rbVar = StringVar()
 
 inputPath = StringVar()
 outputPath = StringVar()
@@ -108,15 +100,11 @@ def bStart():
     disableAll()
     thread = threading.Thread(target=convertTS2MP4, args=(False,))
     thread.start()
-#    thread.join()
-#    enableAll()
 
 def bStartOverwrite():
     disableAll()
     thread = threading.Thread(target=convertTS2MP4, args=(True,))
     thread.start()
-#    thread.join()
-#    enableAll()
 
 def logMsg(msg):
     txtMsg.insert(END, msg+"\n")
@@ -158,21 +146,33 @@ def convertTS2MP4(overwrite):
             skipCount += 1
         else:
             logMsg("Processing: "+tsf)
-            result = subprocess.call("cp "+tsf+" "+mpf, shell=True)
-            if (result == 0):
+            cmd = ["ffmpeg",
+                   "-y",
+                   "-i",
+                   tsf,
+                   "-vcodec",
+                   "copy",
+                   "-tag:v",
+                   "hvc1",
+                   "-acodec",
+                   "copy",
+                   mpf]
+            res = subprocess.run(cmd, stderr=subprocess.PIPE)
+            if (res.returncode == 0):
                 procCount += 1
             else:
                 errCount += 1
+                print(res.stderr)
+                logMsg("stderr:"+res.stderr.decode('utf-8'))
     
 #        logMsg(tsf)
 #        logMsg(mpf)
 
     logMsg("Processed "+str(procCount)+" file(s), "+str(skipCount)+" file(s) skipped")
     logMsg("Error count="+str(errCount))
-    enableAll();
+    enableAll()
 
 def loadIni():
-    print("<<<")
     global tsPath, mpPath, iniFile
     from os.path import expanduser
     home = expanduser("~")
@@ -200,10 +200,8 @@ def loadIni():
 
 def saveIni():
     global tsPath, mpPath, iniFile
-    print(">>>")
 
     if tsPath != "" and mpPath != "":
-        print("...")
         root = ET.Element("data")
         item1 = ET.SubElement(root, "item")
         item1.set("name", "tsPath")
