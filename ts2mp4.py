@@ -14,20 +14,21 @@ import subprocess
 import threading
 
 root = Tk()
-frame = ttk.Frame(root, padding=10)
-fMsg = ttk.Frame(frame, padding=10)
-txtMsg = Text(fMsg, height=15, width=80)
-
-#rbVar = StringVar()
 
 inputPath = StringVar()
 outputPath = StringVar()
 
 def main():
-    global btnS, btnM, btn1, btn2
+    global txtMsg, btnS, btnM, btn1, btn2
+
+    frame = ttk.Frame(root, padding=10)
+    fMsg = ttk.Frame(frame, padding=10)
+    txtMsg = Text(fMsg, height=15, width=80)
+
     loadIni()
     inputPath.set(tsPath)
     outputPath.set(mpPath)
+
     style = ttk.Style()
 # comment out following line because 'alt' does not work with MacOS Venture and works with default theme well
     style.theme_use('alt')  # to avoid MacOS Dark mode issue with default ttk thema 'aqua'
@@ -62,7 +63,6 @@ def main():
         fDO, text='Start, overwrite all', width=25,
         command=bStartOverwrite)
     btn2.pack(side=LEFT)
-
 
     lMsg = ttk.Label(frame,text="Messages:")
     lMsg.pack(anchor=W)
@@ -107,6 +107,7 @@ def bStartOverwrite():
     thread.start()
 
 def logMsg(msg):
+    global txtMsg
     txtMsg.insert(END, msg+"\n")
     txtMsg.see(END)
 
@@ -147,16 +148,16 @@ def convertTS2MP4(overwrite):
         else:
             logMsg("Processing: "+tsf)
             cmd = ["ffmpeg",
-                   "-y",
-                   "-i",
+                   "-y",            # overwrite yes
+                   "-i",            # input file, ts file name
                    tsf,
-                   "-vcodec",
+                   "-vcodec",       # video codec:copy
                    "copy",
-                   "-tag:v",
+                   "-tag:v",        # this is for macOS
                    "hvc1",
-                   "-acodec",
+                   "-acodec",       # audio codec:copy
                    "copy",
-                   mpf]
+                   mpf]             # output file, mp4 file name
             res = subprocess.run(cmd, stderr=subprocess.PIPE)
             if (res.returncode == 0):
                 procCount += 1
