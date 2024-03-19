@@ -2,7 +2,7 @@
 # Author: KozakFPV  
 # Copyright (C) 2024 by Nobumichi Kozawa
 
-version = "0.8"
+version = "1.0"
 
 from tkinter import *
 from tkinter import filedialog
@@ -86,6 +86,10 @@ def main():
 
     lAuthor = ttk.Label(frame, text="V"+str(version)+" by KozakFPV")
     lAuthor.pack(anchor=E)
+
+    logMsg("==========================================")
+    logMsg("= HDZero 90FPS DVR file is not supported =")
+    logMsg("==========================================")
     root.mainloop()
 
 def bTSGetPath():
@@ -184,8 +188,7 @@ def convertTS2MP4(overwrite):
 #        logMsg(tsf)
 #        logMsg(mpf)
 
-    logMsg("Processed "+str(procCount)+" file(s), "+str(skipCount)+" file(s) skipped")
-    logMsg("Error count="+str(errCount))
+    logMsg("Processed: "+str(procCount)+" file(s) / Skipped: "+str(skipCount)+" file(s) / Error: "+str(errCount)+" files(s)")
     #thread.join()
     enableAll()
 
