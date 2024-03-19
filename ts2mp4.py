@@ -87,6 +87,8 @@ def main():
     lAuthor = ttk.Label(frame, text="V"+str(version)+" by KozakFPV")
     lAuthor.pack(anchor=E)
 
+    # 90FPS mode of nano90 camera generates strange format both in MP4 and TS.
+    # Perhaps future HDZero firmware corrects this.
     logMsg("==========================================")
     logMsg("= HDZero 90FPS DVR file is not supported =")
     logMsg("==========================================")
