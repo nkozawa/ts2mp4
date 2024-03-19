@@ -2,7 +2,7 @@
 # Author: KozakFPV  
 # Copyright (C) 2024 by Nobumichi Kozawa
 
-version = "0.7"
+version = "0.8"
 
 from tkinter import *
 from tkinter import filedialog
@@ -12,22 +12,26 @@ import xml.etree.ElementTree as ET
 import glob
 import subprocess
 import threading
+import atexit
 
 root = Tk()
 
 inputPath = StringVar()
 outputPath = StringVar()
+timestampOpt = BooleanVar()
 
 def main():
-    global txtMsg, btnS, btnM, btn1, btn2
+    global txtMsg, btnS, btnM, btn1, btn2, cTimeOpt
 
     frame = ttk.Frame(root, padding=10)
     fMsg = ttk.Frame(frame, padding=10)
     txtMsg = Text(fMsg, height=15, width=80)
 
     loadIni()
+
     inputPath.set(tsPath)
     outputPath.set(mpPath)
+    timestampOpt.set(tsOpt)
 
     style = ttk.Style()
 # comment out following line because 'alt' does not work with MacOS Venture and works with default theme well
@@ -53,6 +57,11 @@ def main():
     eOUT = ttk.Entry(fMP, textvariable=outputPath, state='readonly', width=30)
     eOUT.pack(side=LEFT)
 
+    fTimeOpt = ttk.Frame(frame, padding=8, relief=GROOVE)
+    fTimeOpt.pack(anchor=W)
+    cTimeOpt = ttk.Checkbutton(fTimeOpt, text = "Use Original File Timestamps", variable = timestampOpt)
+    cTimeOpt.pack(side=LEFT)
+
     fDO = ttk.Frame(frame)
     fDO.pack(anchor=W)
     btn1 = ttk.Button(
@@ -77,7 +86,6 @@ def main():
 
     lAuthor = ttk.Label(frame, text="V"+str(version)+" by KozakFPV")
     lAuthor.pack(anchor=E)
-
     root.mainloop()
 
 def bTSGetPath():
@@ -112,24 +120,28 @@ def logMsg(msg):
     txtMsg.see(END)
 
 def disableAll():
-    global btnS, btnM, btn1, btn2
+    global btnS, btnM, btn1, btn2, cTimeOpt
     btnS["state"] = DISABLED
     btnM["state"] = DISABLED
     btn1["state"] = DISABLED
     btn2["state"] = DISABLED
+    cTimeOpt["state"] = DISABLED
 
 def enableAll():
-    global btnS, btnM, btn1, btn2
+    global btnS, btnM, btn1, btn2, cTimeOpt
     btnS["state"] = NORMAL
     btnM["state"] = NORMAL
     btn1["state"] = NORMAL
     btn2["state"] = NORMAL
+    cTimeOpt["state"] = NORMAL
 
 # End of GUI part
 
 def convertTS2MP4(overwrite):
-    global tsPath, mpPath
+    global tsPath, mpPath, tsOpt
+    tsOpt = timestampOpt.get()
     if (tsPath == "" or mpPath == ""):
+        enableAll()
         return
     saveIni()
     procCount = 0
@@ -161,9 +173,12 @@ def convertTS2MP4(overwrite):
             res = subprocess.run(cmd, stderr=subprocess.PIPE)
             if (res.returncode == 0):
                 procCount += 1
+                if tsOpt:
+                    ftime = os.stat(tsf)
+                    os.utime(path=mpf, times=(ftime.st_atime, ftime.st_mtime))
             else:
                 errCount += 1
-                print(res.stderr)
+#                print(res.stderr)
                 logMsg("stderr:"+res.stderr.decode('utf-8'))
     
 #        logMsg(tsf)
@@ -171,10 +186,11 @@ def convertTS2MP4(overwrite):
 
     logMsg("Processed "+str(procCount)+" file(s), "+str(skipCount)+" file(s) skipped")
     logMsg("Error count="+str(errCount))
+    #thread.join()
     enableAll()
 
 def loadIni():
-    global tsPath, mpPath, iniFile
+    global tsPath, mpPath, iniFile, tsOpt
     from os.path import expanduser
     home = expanduser("~")
     iniFile = os.path.join(home, 'ts2mp4.ini')
@@ -186,30 +202,33 @@ def loadIni():
 
         for item in root:
             name = item.attrib["name"]
-            path = item.attrib["path"]
-            print(name+","+path)
+            value = item.attrib["value"]
             if name == "tsPath":
-                tsPath = path
+                tsPath = value
             if name == "mpPath":
-                mpPath = path
-    except FileNotFoundError as e:
+                mpPath = value
+            if name == "tsOpt":
+                tsOpt = (value == "1")
+    except:
         tsPath = ""
         mpPath = ""
-
-    print(tsPath+","+mpPath)
+        tsOpt = TRUE
 
 
 def saveIni():
-    global tsPath, mpPath, iniFile
+    global tsPath, mpPath, iniFile, tsOpt
 
     if tsPath != "" and mpPath != "":
         root = ET.Element("data")
         item1 = ET.SubElement(root, "item")
         item1.set("name", "tsPath")
-        item1.set("path", tsPath)
+        item1.set("value", tsPath)
         item2 = ET.SubElement(root, "item")
         item2.set("name", "mpPath")
-        item2.set("path", mpPath)
+        item2.set("value", mpPath)
+        item3 = ET.SubElement(root, "item")
+        item3.set("name", "tsOpt")
+        item3.set("value", "1" if (tsOpt) else "0")
         tree = ET.ElementTree(root)
         tree.write(iniFile, encoding="utf-8")
 
