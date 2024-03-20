@@ -42,7 +42,7 @@ def main():
     fTS = ttk.Frame(frame)
     fTS.pack(anchor=W)
     btnS = ttk.Button(
-        fTS, text='HDZERO MicroSD Path(TS files)', width=30,
+        fTS, text='Input path(TS files)', width=30,
         command=bTSGetPath)
     btnS.pack(side=LEFT)
     eIN = ttk.Entry(fTS, textvariable=inputPath, state='readonly', width=30)
