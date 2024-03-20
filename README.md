@@ -21,3 +21,6 @@ https://ffmpeg.org/download.html
 2. Click "Output path(MP4 files)" to specify folder path to place MP4 files.
 3. Check "Use Original File Timestamnps", if you want to copy file timestmaps (atime and mtime) from TS file to MP4 file.<br>You need to install RTC battery to HDZero goggle to make TS files timestamp correctlly.<br>If you want to have current timestamps on MP files. please un-check this.
 4. Click "Start, no overwrite" or "Star, overwrite all" to start process.
+
+## INI file
+"ts2mp4.ini" file will be created on your home folder when start process.
