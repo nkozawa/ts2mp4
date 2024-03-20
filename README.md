@@ -16,3 +16,8 @@ https://ffmpeg.org/download.html
 - MacOS and Windows executables are also available.
 
 ## Usage
+![main menu](images/ts2mp4.png)
+1. Click "Input path(TS files)" to specify TS files locatioon. This could be 'movies' folder of HDZero SD card.
+2. Click "Output path(MP4 files)" to specify folder path to place MP4 files.
+3. Check "Use Original File Timestamnps", if you want to copy file timestmaps (atime and mtime) from TS file to MP4 file.<br>You need to install RTC battery to HDZero goggle to make TS files timestamp correctlly.<br>If you want to have current timestamps on MP files. please un-check this.
+4. Click "Start, no overwrite" or "Star, overwrite all" to start process.
