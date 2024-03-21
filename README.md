@@ -3,6 +3,7 @@ This program converts HDZero DVR files in TS video format to MP4 files.
 - No re-encoding, thus faster
 - Keep original file timestamp (optional)
 - One-click processing for multiple files
+- This program does not support 90FPS DVR file
 
 日本語での解説は私のブログを参照願います。
 https://www.nkozawa.com/blog/archives/7677
