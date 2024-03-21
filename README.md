@@ -4,6 +4,9 @@ This program converts HDZero DVR files in TS video format to MP4 files.
 - Keep original file timestamp (optional)
 - One-click processing for multiple files
 
+日本語での解説は私のブログを参照願います。
+https://www.nkozawa.com/blog/archives/7677
+
 ## HDZero
 https://www.hd-zero.com/
 This is digital video system for FPV drones.
@@ -23,4 +26,4 @@ https://ffmpeg.org/download.html
 4. Click "Start, no overwrite" or "Star, overwrite all" to start process.
 
 ## INI file
-"ts2mp4.ini" file will be created on your home folder when start process.
+"ts2mp4.ini" file will be created on your home folder when start conversion process.
